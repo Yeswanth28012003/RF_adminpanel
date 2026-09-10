@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Django
+*.log
+staticfiles/
+media/
+db.sqlite3*
+
+# Env files (never copy secrets into image)
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.dockerignore
+Dockerfile
+docker-compose*.yml
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy helpers (not needed inside app image)
+deploy/scripts/
+deploy/certbot/
+deploy.sh

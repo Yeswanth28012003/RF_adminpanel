@@ -1,0 +1,88 @@
+{% extends 'users/base.html' %}
+
+{% block title %}User Created - RF Admin Panel{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <div class="success-icon">
+        <div class="circle">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+    </div>
+    <h2 style="text-align: center; margin-bottom: 0.25rem; color: var(--green);">User Created Successfully</h2>
+    <p style="text-align: center; color: var(--gray-500); margin-bottom: 1.5rem; font-size: 0.875rem;">
+        Share these credentials with the user.<br>
+        <strong style="color: var(--red);">This password is shown only once.</strong>
+    </p>
+
+    <div class="cred-box">
+        <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Username</label>
+            <div class="cred-row">
+                <input type="text" id="cred_username" value="{{ username }}" readonly>
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyCred('cred_username', this)">Copy</button>
+            </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label>Password</label>
+            <div class="cred-row">
+                <input type="text" id="cred_password" value="{{ password }}" readonly>
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyCred('cred_password', this)">Copy</button>
+                <button type="button" class="btn btn-gold btn-sm" onclick="copyBoth(this)">Copy Both</button>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem;">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary" style="flex: 1; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </a>
+        <a href="{% url 'add_user' %}" class="btn btn-gold" style="flex: 1; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Another
+        </a>
+    </div>
+</div>
+
+<script>
+function copyCred(id, btn) {
+    var el = document.getElementById(id);
+    el.select();
+    el.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    var original = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'var(--white)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(function() {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    }, 1500);
+}
+
+function copyBoth(btn) {
+    var u = document.getElementById('cred_username').value;
+    var p = document.getElementById('cred_password').value;
+    var text = 'Username: ' + u + '\nPassword: ' + p;
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var original = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'var(--white)';
+    setTimeout(function() {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.color = '';
+    }, 1500);
+}
+</script>
+{% endblock %}

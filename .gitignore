@@ -1,0 +1,41 @@
+# ============ Python ============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ============ Django ============
+*.log
+logs/
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+collected_static/
+
+# ============ Environment / Secrets ============
+.env
+.env.local
+.env.production
+
+# ============ Docker ============
+deploy/certbot/
+
+# ============ IDE / OS ============
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# ============ Misc ============
+demo.txt

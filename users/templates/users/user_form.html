@@ -1,0 +1,57 @@
+{% extends 'users/base.html' %}
+
+{% block title %}{{ title }} - RF Admin Panel{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 480px;">
+    <div class="card-header">
+        <h2>{{ title }}</h2>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" value="{{ user_data.username|default:'' }}" placeholder="Enter username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password {% if not edit %}*{% endif %}</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="password" id="password" name="password" value="{% if edit %}{{ user_data.password_plain }}{% endif %}" placeholder="{% if edit %}Enter new password or leave blank to keep current{% else %}Enter password{% endif %}" {% if not edit %}required{% endif %}>
+                <button type="button" class="btn btn-outline" onclick="togglePw()" title="Show/Hide Password" style="flex-shrink: 0; padding: 0.5rem 0.75rem;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+            </div>
+            {% if edit %}<p class="hint">Leave blank to keep current password</p>{% endif %}
+        </div>
+        <div class="form-group">
+            <div class="form-check">
+                <input type="checkbox" id="is_active" name="is_active" {% if user_data.is_active or not edit %}checked{% endif %}>
+                <label for="is_active">Active Account</label>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-gold">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                {{ button_text }}
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function togglePw() {
+    var el = document.getElementById('password');
+    if (el.type === 'password') {
+        el.type = 'text';
+    } else {
+        el.type = 'password';
+    }
+}
+</script>
+{% endblock %}
