@@ -1,15 +1,19 @@
 {% extends 'users/base.html' %}
+{% load static %}
 
 {% block title %}Dashboard - RF Admin Panel{% endblock %}
 
 {% block content %}
 <div class="card">
     <div class="card-header">
-        <h2>User Management</h2>
-        <a href="{% url 'add_user' %}" class="btn btn-gold">
+        <h2>
+            <img src="{% static 'img/RF.png' %}" alt="RF" style="width: 30px; height: 30px; border-radius: 6px; object-fit: contain;">
+            User Management
+        </h2>
+        <button type="button" class="btn btn-gold" onclick="openAddUserModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add User
-        </a>
+        </button>
     </div>
 
     {% if messages %}
@@ -41,9 +45,6 @@
                             <button type="button" class="btn btn-outline btn-sm" onclick="togglePassword({{ user.id }})" title="Show/Hide">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
-                            <button type="button" class="btn btn-gold btn-sm" onclick="resetPassword({{ user.id }}, '{{ user.username }}')" title="Reset Password">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                            </button>
                         </div>
                     </td>
                     <td>{{ user.date_joined|date:"M d, Y" }}</td>
@@ -69,12 +70,12 @@
                     </td>
                 </tr>
                 {% empty %}
-                <tr>
+                <tr id="empty-row">
                     <td colspan="5">
                         <div class="table-empty">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--gray-300);"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                             <p>No users found</p>
-                            <a href="{% url 'add_user' %}" class="btn btn-gold" style="margin-top: 1rem;">Create First User</a>
+                            <button type="button" class="btn btn-gold" style="margin-top: 1rem;" onclick="openAddUserModal()">Create First User</button>
                         </div>
                     </td>
                 </tr>
@@ -84,7 +85,280 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="addUserModal" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <h2>Add User</h2>
+            <button type="button" class="modal-close" onclick="closeAddUserModal()">&times;</button>
+        </div>
+
+        <div id="addUserFormView">
+            <div class="alert alert-error" id="addUserError" style="display: none;"></div>
+            <form id="addUserForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="modal_username">Username</label>
+                    <input type="text" id="modal_username" name="username" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label for="modal_password">Password</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="password" id="modal_password" name="password" placeholder="Enter password" required>
+                        <button type="button" class="btn btn-outline" onclick="toggleModalPw()" title="Show/Hide Password" style="flex-shrink: 0; padding: 0.5rem 0.75rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-check">
+                        <input type="checkbox" id="modal_is_active" name="is_active" checked>
+                        <label for="modal_is_active">Active Account</label>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-gold">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Create User
+                    </button>
+                    <button type="button" class="btn btn-outline" onclick="closeAddUserModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+
+        <div id="addUserCreatedView" style="display: none;">
+            <div class="success-icon">
+                <div class="circle">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+            </div>
+            <h3 style="text-align: center; margin-bottom: 0.25rem; color: var(--green);">User Created Successfully</h3>
+            <p style="text-align: center; color: var(--gray-500); margin-bottom: 1.25rem; font-size: 0.875rem;">
+                Share these credentials with the user.<br>
+                <strong style="color: var(--red);">This password is shown only once.</strong>
+            </p>
+
+            <div class="cred-box">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Username</label>
+                    <div class="cred-row">
+                        <input type="text" id="new_username" readonly>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="copyCred('new_username', this)">Copy</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>Password</label>
+                    <div class="cred-row">
+                        <input type="text" id="new_password" readonly>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="copyCred('new_password', this)">Copy</button>
+                        <button type="button" class="btn btn-gold btn-sm" onclick="copyBoth(this)">Copy Both</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="button" class="btn btn-primary" style="flex: 1; justify-content: center;" onclick="closeAddUserModal()">Done</button>
+                <button type="button" class="btn btn-gold" style="flex: 1; justify-content: center;" onclick="resetAddUserModal()">Add Another</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.55);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        padding: 1rem;
+    }
+
+    .modal {
+        background: var(--white);
+        border-radius: 14px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        padding: 1.75rem;
+        width: 100%;
+        max-width: 440px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--gray-100);
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .modal-header h2::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: var(--gold);
+        border-radius: 2px;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 1.75rem;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--gray-400);
+        transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+        color: var(--red);
+    }
+</style>
+
 <script>
+function openAddUserModal() {
+    resetAddUserModal();
+    document.getElementById('addUserModal').style.display = 'flex';
+    document.getElementById('modal_username').focus();
+}
+
+function closeAddUserModal() {
+    document.getElementById('addUserModal').style.display = 'none';
+    document.getElementById('addUserError').style.display = 'none';
+}
+
+var ICON_EYE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var ICON_RESET = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+var ICON_EDIT = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+var ICON_DELETE = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+function addTableRow(data) {
+    var tbody = document.querySelector('.table-wrapper tbody');
+    if (!tbody) return;
+
+    var emptyRow = document.getElementById('empty-row');
+    if (emptyRow) emptyRow.remove();
+
+    var badge = data.is_active
+        ? '<span class="badge badge-active">Active</span>'
+        : '<span class="badge badge-inactive">Inactive</span>';
+
+    var row = document.createElement('tr');
+    row.innerHTML =
+        '<td><strong style="color: var(--black);">' + data.username + '</strong></td>' +
+        '<td><div class="cred-row" id="pw-row-' + data.id + '">' +
+            '<input type="password" id="pw-' + data.id + '" value="' + data.password + '" readonly style="width: 140px; padding: 0.35rem 0.6rem; font-size: 0.8rem; background: var(--gray-50); border: 1px solid var(--gray-200); border-radius: 6px;">' +
+            '<button type="button" class="btn btn-outline btn-sm" onclick="togglePassword(' + data.id + ')" title="Show/Hide">' + ICON_EYE + '</button>' +
+        '</div></td>' +
+        '<td>' + data.date_joined + '</td>' +
+        '<td>' + badge + '</td>' +
+        '<td><div class="actions">' +
+            '<a href="/edit-user/' + data.id + '/" class="btn btn-primary btn-sm">' + ICON_EDIT + ' Edit</a>' +
+            '<a href="/delete-user/' + data.id + '/" class="btn btn-danger btn-sm" onclick="return confirm(\'Are you sure you want to delete ' + data.username + '?\')">' + ICON_DELETE + ' Delete</a>' +
+        '</div></td>';
+
+    tbody.insertBefore(row, tbody.firstChild);
+}
+
+function resetAddUserModal() {
+    document.getElementById('addUserFormView').style.display = 'block';
+    document.getElementById('addUserCreatedView').style.display = 'none';
+    document.getElementById('addUserError').style.display = 'none';
+    document.getElementById('addUserForm').reset();
+    document.getElementById('modal_is_active').checked = true;
+}
+
+function toggleModalPw() {
+    var el = document.getElementById('modal_password');
+    el.type = el.type === 'password' ? 'text' : 'password';
+}
+
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var errorBox = document.getElementById('addUserError');
+    errorBox.style.display = 'none';
+
+    var formData = new FormData(this);
+    fetch('{% url "add_user" %}', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(function(response) {
+        return response.json().then(function(data) {
+            if (!response.ok) throw data;
+            return data;
+        });
+    })
+    .then(function(data) {
+        addTableRow(data);
+        document.getElementById('new_username').value = data.username;
+        document.getElementById('new_password').value = data.password;
+        document.getElementById('addUserFormView').style.display = 'none';
+        document.getElementById('addUserCreatedView').style.display = 'block';
+    })
+    .catch(function(err) {
+        errorBox.textContent = err.error || 'Something went wrong. Please try again.';
+        errorBox.style.display = 'block';
+    });
+});
+
+function copyCred(id, btn) {
+    var el = document.getElementById(id);
+    el.select();
+    el.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    var original = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'var(--white)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(function() {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    }, 1500);
+}
+
+function copyBoth(btn) {
+    var u = document.getElementById('new_username').value;
+    var p = document.getElementById('new_password').value;
+    var text = 'Username: ' + u + '\nPassword: ' + p;
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var original = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.style.background = 'var(--green)';
+    btn.style.color = 'var(--white)';
+    setTimeout(function() {
+        btn.textContent = original;
+        btn.style.background = '';
+        btn.style.color = '';
+    }, 1500);
+}
+
 function togglePassword(userId) {
     var input = document.getElementById('pw-' + userId);
     if (input.type === 'password') {

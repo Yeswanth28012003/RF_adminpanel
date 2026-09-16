@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser
@@ -102,19 +103,23 @@ def dashboard_view(request):
 
 @login_required
 def add_user_view(request):
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         is_active = request.POST.get('is_active') == 'on'
-        
+
         if User.objects.filter(username=username).exists():
+            if is_ajax:
+                return JsonResponse({'error': 'Username already exists'}, status=400)
             return render(request, 'users/user_form.html', {
                 'error': 'Username already exists',
                 'title': 'Add User',
                 'button_text': 'Add User',
                 'user_data': request.POST
             })
-        
+
         user = User.objects.create_user(
             username=username,
             password=password
@@ -122,12 +127,22 @@ def add_user_view(request):
         user.is_active = is_active
         user.password_plain = password
         user.save()
-        
+
+        if is_ajax:
+            return JsonResponse({
+                'success': True,
+                'id': user.id,
+                'username': username,
+                'password': password,
+                'is_active': user.is_active,
+                'date_joined': user.date_joined.strftime('%b %d, %Y'),
+            })
+
         return render(request, 'users/user_created.html', {
             'username': username,
             'password': password
         })
-    
+
     return render(request, 'users/user_form.html', {
         'title': 'Add User',
         'button_text': 'Add User',
