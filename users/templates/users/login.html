@@ -4,6 +4,29 @@
 {% block title %}Login - RF Admin Panel{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    .container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .login-card {
+        margin: 0 auto !important;
+    }
+
+    .site-footer {
+        display: none;
+    }
+</style>
 <div class="login-card" style="margin: 3rem auto 0;">
     <div class="login-logo">
         <img src="{% static 'img/RF.png' %}" alt="RF Logo" style="width: 64px; height: 64px; border-radius: 14px; object-fit: contain; margin-bottom: 1rem;">
